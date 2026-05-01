@@ -2,6 +2,8 @@ from typing import Any, cast
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.db.models import QuerySet
+from django.forms import ModelForm
 from django.http import HttpRequest
 
 from apps.users.models import User, UserRole
@@ -28,3 +30,13 @@ class UserAdmin(DjangoUserAdmin):
 
     def has_delete_permission(self, request: HttpRequest, obj: User | None = None) -> bool:
         return self.has_module_permission(request)
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[User]:
+        queryset = super().get_queryset(request)
+        return queryset.filter(role=UserRole.ADMIN)
+
+    def save_model(self, request: HttpRequest, obj: User, form: ModelForm, change: bool) -> None:
+        obj.role = UserRole.ADMIN
+        obj.is_superuser = False
+        obj.is_staff = True
+        super().save_model(request, obj, form, change)

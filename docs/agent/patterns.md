@@ -2,3 +2,5 @@
 - Keep writes in service functions with `@transaction.atomic`.
 - Write audit entries from service layer to avoid model-side business logic.
 - Use admin as orchestration UI and keep data validations in services.
+- Use Unfold `DASHBOARD_CALLBACK` + `templates/admin/index.html` for simple KPI cards.
+- Keep dashboard focused on KPIs/audit summary; move operational navigation to sidebar links.

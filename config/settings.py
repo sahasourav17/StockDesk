@@ -102,4 +102,82 @@ UNFOLD = {
     "SITE_TITLE": "Stock Management",
     "SITE_HEADER": "Stock Management Admin",
     "SITE_URL": "/admin/",
+    "DASHBOARD_CALLBACK": "apps.reports.dashboard.dashboard_callback",
+    "SIDEBAR": {
+        "navigation": [
+            {
+                "title": "Main",
+                "items": [
+                    {
+                        "title": "Dashboard",
+                        "icon": "dashboard",
+                        "link": "/admin/",
+                    },
+                    {
+                        "title": "Low Stock Products",
+                        "icon": "inventory_2",
+                        "link": "/admin/products/product/?low_stock=1",
+                    },
+                    {
+                        "title": "Users",
+                        "icon": "group",
+                        "link": "/admin/users/user/",
+                    },
+                ],
+            },
+            {
+                "title": "Inventory",
+                "items": [
+                    {
+                        "title": "Suppliers",
+                        "icon": "local_shipping",
+                        "link": "/admin/suppliers/supplier/",
+                    },
+                    {
+                        "title": "Products",
+                        "icon": "inventory",
+                        "link": "/admin/products/product/",
+                    },
+                    {
+                        "title": "Stock Transactions",
+                        "icon": "sync_alt",
+                        "link": "/admin/stock/stocktransaction/",
+                    },
+                    {
+                        "title": "Damage Records",
+                        "icon": "broken_image",
+                        "link": "/admin/stock/damagerecord/",
+                    },
+                ],
+            },
+            {
+                "title": "Sales & Finance",
+                "items": [
+                    {
+                        "title": "Sales",
+                        "icon": "point_of_sale",
+                        "link": "/admin/sales/sale/",
+                    },
+                    {
+                        "title": "Due Transactions",
+                        "icon": "payments",
+                        "link": "/admin/finance/duetransaction/",
+                    },
+                ],
+            },
+            {
+                "title": "Audit",
+                "items": [
+                    {
+                        "title": "Audit Logs",
+                        "icon": "history",
+                        "link": "/admin/audit/auditlog/",
+                    },
+                ],
+            }
+        ]
+    },
 }
+
+LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/admin/"
