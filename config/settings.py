@@ -99,8 +99,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
 
 UNFOLD = {
-    "SITE_TITLE": "Stock Management",
-    "SITE_HEADER": "Stock Management Admin",
+    "SITE_TITLE": "StockDesk",
+    "SITE_HEADER": "StockDesk",
     "SITE_URL": "/admin/",
     "DASHBOARD_CALLBACK": "apps.reports.dashboard.dashboard_callback",
     "SIDEBAR": {

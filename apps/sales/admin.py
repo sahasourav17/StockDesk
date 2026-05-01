@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Any
 
 from django import forms
@@ -15,9 +16,22 @@ from apps.stock.services import InsufficientStockError
 
 
 class SaleAdminForm(forms.ModelForm):
+    total_price_preview = forms.DecimalField(label="Total Price", required=False, disabled=True, decimal_places=2)
+
     class Meta:
         model = Sale
-        fields = ("product", "quantity", "selling_price", "date")
+        fields = ("product", "quantity", "selling_price", "total_price_preview", "date")
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        quantity = self.data.get("quantity") if self.is_bound else getattr(self.instance, "quantity", None)
+        unit_price = self.data.get("selling_price") if self.is_bound else getattr(self.instance, "selling_price", None)
+        try:
+            qty_decimal = Decimal(str(quantity)) if quantity not in (None, "") else Decimal("0")
+            unit_decimal = Decimal(str(unit_price)) if unit_price not in (None, "") else Decimal("0")
+            self.fields["total_price_preview"].initial = (qty_decimal * unit_decimal).quantize(Decimal("0.01"))
+        except Exception:
+            self.fields["total_price_preview"].initial = Decimal("0.00")
 
     def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean() or {}

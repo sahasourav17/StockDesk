@@ -5,7 +5,10 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.forms import ModelForm
 from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.html import format_html
 from unfold.admin import ModelAdmin
+from unfold.widgets import UnfoldAdminIntegerFieldWidget
 
 from apps.audit.admin_mixins import AuditAdminMixin
 from apps.audit.services import model_snapshot
@@ -31,24 +34,57 @@ class LowStockFilter(admin.SimpleListFilter):
 
 class ProductAdminForm(forms.ModelForm):
     opening_quantity = forms.IntegerField(
-        min_value=0,
+        label="Quantity",
+        min_value=1,
         required=False,
-        initial=0,
-        help_text="Optional quantity to add to stock",
+        help_text="Required while creating product; optional while editing",
+        widget=UnfoldAdminIntegerFieldWidget(
+            attrs={
+                "min": 1,
+                "step": 1,
+                "inputmode": "numeric",
+                "placeholder": "0",
+            }
+        ),
     )
 
     class Meta:
         model = Product
         fields = ("name", "supplier", "buying_price")
 
+    def clean(self) -> dict[str, object]:
+        cleaned_data = super().clean() or {}
+        opening_quantity = cleaned_data.get("opening_quantity")
+        if self.instance.pk is None and opening_quantity is None:
+            raise forms.ValidationError("Quantity is required while creating a product.")
+        return cleaned_data
+
 
 @admin.register(Product)
 class ProductAdmin(AuditAdminMixin, ModelAdmin):
     form = ProductAdminForm
-    list_display = ("name", "supplier", "buying_price", "current_stock", "created_at")
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "supplier",
+                    "buying_price",
+                    "opening_quantity",
+                ),
+            },
+        ),
+    )
+    list_display = ("name", "supplier", "buying_price", "current_stock", "created_at", "actions_menu")
     search_fields = ("name",)
     list_filter = ("supplier", "created_at", LowStockFilter)
     autocomplete_fields = ("supplier",)
+
+    @admin.display(description="Actions")
+    def actions_menu(self, obj: Product) -> str:
+        delete_url = reverse("admin:products_product_delete", args=[obj.pk])
+        return format_html('<a href="{}" title="Delete" style="font-size:18px;">&#8942;</a>', delete_url)
 
     def save_model(self, request: HttpRequest, obj: Product, form: ModelForm, change: bool) -> None:
         opening_qty = int(form.cleaned_data.get("opening_quantity") or 0)
