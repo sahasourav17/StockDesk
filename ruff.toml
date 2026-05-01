@@ -1,0 +1,15 @@
+target-version = "py312"
+line-length = 120
+
+extend-exclude = [
+    "migrations",
+    "node_modules",
+]
+
+[lint]
+select = ["E", "F", "I", "UP", "DJ", "T20", "B", "N"]
+ignore = ["E203"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

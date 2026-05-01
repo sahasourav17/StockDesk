@@ -1,0 +1,2 @@
+- Never create OUT/DAMAGE entries without stock lock (`select_for_update`).
+- Avoid direct model save logic for sale/damage stock writes; use services.

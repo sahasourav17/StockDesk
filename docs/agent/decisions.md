@@ -1,0 +1,3 @@
+- Chose custom `User` model with `role` field (`SUPER_ADMIN`, `ADMIN`).
+- Enforced stock mutations through transaction ledger, not direct quantity field.
+- Used Postgres as default DB in settings for production parity.

@@ -1,0 +1,4 @@
+- Use ledger-based stock (`StockTransaction`) to derive current stock from aggregates.
+- Keep writes in service functions with `@transaction.atomic`.
+- Write audit entries from service layer to avoid model-side business logic.
+- Use admin as orchestration UI and keep data validations in services.

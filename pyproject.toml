@@ -1,0 +1,27 @@
+[project]
+name = "stock-management"
+version = "0.1.0"
+description = "Django stock management system with audit logs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0.4",
+    "django-unfold>=0.92.0",
+    "psycopg2-binary>=2.9.12",
+    "python-dotenv>=1.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=6.0.3",
+    "mypy>=1.20.2",
+    "ruff>=0.15.12",
+    "poethepoet>=0.37.0",
+]
+
+[tool.poe.tasks]
+start = "uv run python manage.py runserver"
+lint = "uv run ruff check ."
+format = "uv run ruff format ."
+typec = "uv run mypy ."
+test = "uv run python manage.py test"
