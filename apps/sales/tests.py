@@ -13,7 +13,7 @@ from apps.suppliers.models import Supplier
 class SaleServiceTests(TestCase):
     def test_create_sale_creates_out_transaction(self) -> None:
         supplier = Supplier.objects.create(name="S1", contact_info="c", address="a")
-        product = Product.objects.create(name="P1", supplier=supplier, selling_price=Decimal("10"))
+        product = Product.objects.create(name="P1", supplier=supplier, buying_price=Decimal("10"))
         create_stock_transaction(
             {
                 "product_id": product.id,

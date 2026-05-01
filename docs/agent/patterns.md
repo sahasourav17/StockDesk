@@ -4,3 +4,4 @@
 - Use admin as orchestration UI and keep data validations in services.
 - Use Unfold `DASHBOARD_CALLBACK` + `templates/admin/index.html` for simple KPI cards.
 - Keep dashboard focused on KPIs/audit summary; move operational navigation to sidebar links.
+- For product onboarding, capture `opening_quantity` in admin form and create an `IN` stock transaction immediately.

@@ -11,7 +11,7 @@ from apps.suppliers.models import Supplier
 class AuditLogTests(TestCase):
     def test_stock_transaction_creates_audit_log(self) -> None:
         supplier = Supplier.objects.create(name="S1", contact_info="c", address="a")
-        product = Product.objects.create(name="P1", supplier=supplier, selling_price=Decimal("10"))
+        product = Product.objects.create(name="P1", supplier=supplier, buying_price=Decimal("10"))
 
         create_stock_transaction(
             {
