@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.forms import ModelForm
-from django.http import HttpRequest
-from django.urls import reverse
+from django.http import HttpRequest, HttpResponseRedirect
+from django.urls import path, reverse
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 from unfold.widgets import UnfoldAdminIntegerFieldWidget
@@ -40,7 +41,6 @@ class DeletedStatusFilter(admin.SimpleListFilter):
         return [
             ("active", "Active"),
             ("deleted", "Deleted"),
-            ("all", "All"),
         ]
 
     def queryset(self, request: HttpRequest, queryset: QuerySet[Product]) -> QuerySet[Product]:
@@ -103,6 +103,16 @@ class ProductAdmin(AuditAdminMixin, ModelAdmin):
 
     @admin.display(description="Actions")
     def actions_menu(self, obj: Product) -> str:
+        if obj.is_deleted:
+            restore_url = reverse("admin:products_product_restore", args=[obj.pk])
+            return format_html(
+                (
+                    '<a href="{}" class="rounded border border-green-500 px-2 py-1 '
+                    'text-xs font-medium text-green-700 hover:bg-green-50">Undo Delete</a>'
+                ),
+                restore_url,
+            )
+
         delete_url = reverse("admin:products_product_delete", args=[obj.pk])
         return format_html(
             (
@@ -157,8 +167,41 @@ class ProductAdmin(AuditAdminMixin, ModelAdmin):
     def get_queryset(self, request: HttpRequest) -> QuerySet[Product]:
         queryset = Product._base_manager.select_related("supplier")
         deleted = request.GET.get("deleted")
-        if deleted == "all":
+        if deleted is None:
             return queryset
         if deleted == "deleted":
             return queryset.filter(is_deleted=True)
-        return queryset.filter(is_deleted=False)
+        if deleted == "active":
+            return queryset.filter(is_deleted=False)
+        return queryset
+
+    def get_urls(self) -> list:
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "<path:object_id>/restore/",
+                self.admin_site.admin_view(self.restore_view),
+                name="products_product_restore",
+            ),
+        ]
+        return custom_urls + urls
+
+    def restore_view(self, request: HttpRequest, object_id: str) -> HttpResponseRedirect:
+        obj = Product._base_manager.filter(pk=object_id).first()
+        if obj is None:
+            self.message_user(request, "Product not found.", level=messages.ERROR)
+            return HttpResponseRedirect(reverse("admin:products_product_changelist"))
+        if not self.has_change_permission(request, obj):
+            raise PermissionDenied
+
+        if obj.is_deleted:
+            before = model_snapshot(obj)
+            obj.is_deleted = False
+            obj.deleted_at = None
+            obj.save(update_fields=["is_deleted", "deleted_at", "updated_at"])
+            self.audit_update(request, before, obj)
+            self.message_user(request, f"Restored product: {obj.name}", level=messages.SUCCESS)
+        else:
+            self.message_user(request, "Product is already active.", level=messages.WARNING)
+
+        return HttpResponseRedirect(reverse("admin:products_product_changelist"))

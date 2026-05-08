@@ -1,3 +1,6 @@
 - Chose custom `User` model with `role` field (`SUPER_ADMIN`, `ADMIN`).
 - Enforced stock mutations through transaction ledger, not direct quantity field.
 - Used Postgres as default DB in settings for production parity.
+- Implemented soft delete for `Product` and `Supplier` using `is_deleted` + `deleted_at` (no hard delete).
+- Kept foreign key history intact for `Sale` and `StockTransaction` by preserving rows and filtering soft-deleted records from default query paths.
+- Added date-range sales summary (sales amount, profit, sold quantity) directly in dashboard callback/template without extra API layer.
