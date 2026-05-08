@@ -32,6 +32,26 @@ class LowStockFilter(admin.SimpleListFilter):
         ).filter(stock_qty__lt=10)
 
 
+class DeletedStatusFilter(admin.SimpleListFilter):
+    title = "deleted status"
+    parameter_name = "deleted"
+
+    def lookups(self, request: HttpRequest, model_admin: ModelAdmin) -> list[tuple[str, str]]:
+        return [
+            ("active", "Active"),
+            ("deleted", "Deleted"),
+            ("all", "All"),
+        ]
+
+    def queryset(self, request: HttpRequest, queryset: QuerySet[Product]) -> QuerySet[Product]:
+        value = self.value()
+        if value == "deleted":
+            return queryset.filter(is_deleted=True)
+        if value == "all":
+            return queryset
+        return queryset.filter(is_deleted=False)
+
+
 class ProductAdminForm(forms.ModelForm):
     opening_quantity = forms.IntegerField(
         label="Quantity",
@@ -76,19 +96,25 @@ class ProductAdmin(AuditAdminMixin, ModelAdmin):
             },
         ),
     )
-    list_display = ("name", "supplier", "buying_price", "current_stock", "created_at", "actions_menu")
+    list_display = ("name", "supplier", "buying_price", "current_stock", "is_deleted", "created_at", "actions_menu")
     search_fields = ("name",)
-    list_filter = ("supplier", "created_at", LowStockFilter)
+    list_filter = (DeletedStatusFilter, "supplier", "created_at", LowStockFilter)
     autocomplete_fields = ("supplier",)
 
     @admin.display(description="Actions")
     def actions_menu(self, obj: Product) -> str:
         delete_url = reverse("admin:products_product_delete", args=[obj.pk])
-        return format_html('<a href="{}" title="Delete" style="font-size:18px;">&#8942;</a>', delete_url)
+        return format_html(
+            (
+                '<a href="{}" class="rounded border border-red-500 px-2 py-1 '
+                'text-xs font-medium text-red-600 hover:bg-red-50">Delete</a>'
+            ),
+            delete_url,
+        )
 
     def save_model(self, request: HttpRequest, obj: Product, form: ModelForm, change: bool) -> None:
         opening_qty = int(form.cleaned_data.get("opening_quantity") or 0)
-        before = model_snapshot(Product.objects.get(pk=obj.pk)) if change else None
+        before = model_snapshot(Product._base_manager.get(pk=obj.pk)) if change else None
         super().save_model(request, obj, form, change)
         if change and before is not None:
             self.audit_update(request, before, obj)
@@ -111,5 +137,28 @@ class ProductAdmin(AuditAdminMixin, ModelAdmin):
 
     def delete_model(self, request: HttpRequest, obj: Product) -> None:
         before = model_snapshot(obj)
-        super().delete_model(request, obj)
+        obj.delete()
         self.audit_delete(request, before, obj)
+
+    def delete_queryset(self, request: HttpRequest, queryset: QuerySet[Product]) -> None:
+        for obj in queryset:
+            before = model_snapshot(obj)
+            obj.delete()
+            self.audit_delete(request, before, obj)
+
+    def get_deleted_objects(
+        self,
+        objs: list[Product],
+        request: HttpRequest,
+    ) -> tuple[list[str], dict[str, int], set[str], list[str]]:
+        # Soft delete does not remove related rows, so skip Django hard-delete cascade checks.
+        return [str(obj) for obj in objs], {}, set(), []
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Product]:
+        queryset = Product._base_manager.select_related("supplier")
+        deleted = request.GET.get("deleted")
+        if deleted == "all":
+            return queryset
+        if deleted == "deleted":
+            return queryset.filter(is_deleted=True)
+        return queryset.filter(is_deleted=False)

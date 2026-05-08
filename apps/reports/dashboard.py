@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -9,12 +10,26 @@ from django.utils import timezone
 from apps.audit.models import AuditLog
 from apps.finance.models import DueTransaction, DueType
 from apps.products.models import Product
+from apps.reports.selectors import get_sales_summary
 from apps.sales.models import Sale
 from apps.stock.models import StockTransaction, StockTransactionType
 
 
+def _parse_date_or_default(raw_value: str | None, fallback: date) -> date:
+    if not raw_value:
+        return fallback
+    try:
+        return date.fromisoformat(raw_value)
+    except ValueError:
+        return fallback
+
+
 def dashboard_callback(request: Any, context: dict[str, Any]) -> dict[str, Any]:
     today = timezone.localdate()
+    from_date = _parse_date_or_default(request.GET.get("from_date"), today)
+    to_date = _parse_date_or_default(request.GET.get("to_date"), today)
+    if from_date > to_date:
+        from_date, to_date = to_date, from_date
 
     total_sales = Sale.objects.filter(date=today).aggregate(total=Coalesce(Sum("total_price"), Decimal("0")))["total"]
 
@@ -39,6 +54,7 @@ def dashboard_callback(request: Any, context: dict[str, Any]) -> dict[str, Any]:
         .count()
     )
     audit_logs = AuditLog.objects.select_related("user").order_by("-timestamp")[:10]
+    sales_summary = get_sales_summary(from_date, to_date)
 
     context.update(
         {
@@ -71,6 +87,9 @@ def dashboard_callback(request: Any, context: dict[str, Any]) -> dict[str, Any]:
             ],
             "audit_logs": audit_logs,
             "today_sales_report_url": reverse("today-sales-report"),
+            "report_from_date": from_date.isoformat(),
+            "report_to_date": to_date.isoformat(),
+            "sales_summary": sales_summary,
         }
     )
     return context
