@@ -6,3 +6,6 @@
 - Keep dashboard focused on KPIs/audit summary; move operational navigation to sidebar links.
 - For product onboarding, capture `opening_quantity` in admin form and create an `IN` stock transaction immediately.
 - For sales admin UX, validate stock in `ModelForm.clean()` and expose a read-only total field.
+- Use Django admin `autocomplete_fields` for searchable foreign-key selection (sales product picker uses product name search).
+- For soft delete in admin, override `delete_model`/`delete_queryset` and keep list defaults to active records only.
+- For soft-delete list filters, rely on Django's built-in "All" option; only define explicit `Active` and `Deleted` lookups.

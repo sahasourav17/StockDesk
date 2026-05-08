@@ -53,6 +53,7 @@ class SaleAdmin(ModelAdmin):
     list_display = ("product", "quantity", "selling_price", "total_price", "date")
     list_filter = ("date", "product")
     search_fields = ("product__name",)
+    autocomplete_fields = ("product",)
 
     def save_model(self, request: HttpRequest, obj: Sale, form: ModelForm, change: bool) -> None:
         if change:

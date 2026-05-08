@@ -1,2 +1,4 @@
 - Never create OUT/DAMAGE entries without stock lock (`select_for_update`).
 - Avoid direct model save logic for sale/damage stock writes; use services.
+- Django admin delete confirmation can trigger related-object hard-delete permission checks before soft-delete hooks; override admin delete-object listing behavior for soft-delete models.
+- Do not add a custom "All" entry in `SimpleListFilter.lookups`; Django injects one automatically, causing duplicate "All" UI options.

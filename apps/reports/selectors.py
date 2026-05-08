@@ -68,3 +68,25 @@ def get_date_range_profit(start_date: date, end_date: date) -> dict[str, Decimal
         "total_cost": in_cost,
         "total_profit": revenue - in_cost,
     }
+
+
+def get_sales_summary(start_date: date, end_date: date) -> dict[str, Decimal | int]:
+    total_sales = Sale.objects.filter(date__range=(start_date, end_date)).aggregate(
+        total=Coalesce(Sum("total_price"), Decimal("0")),
+        total_qty=Coalesce(Sum("quantity"), 0),
+    )
+    total_profit = StockTransaction.objects.filter(
+        created_at__date__range=(start_date, end_date),
+        transaction_type=StockTransactionType.OUT,
+    ).aggregate(
+        total=Coalesce(
+            Sum((F("selling_price") - F("supplier_price")) * -F("quantity_change")),
+            Decimal("0"),
+        )
+    )["total"]
+
+    return {
+        "total_sales_amount": total_sales["total"],
+        "total_profit": total_profit,
+        "total_sold_quantity": int(total_sales["total_qty"]),
+    }
