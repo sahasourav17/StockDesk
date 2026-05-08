@@ -28,70 +28,57 @@
         <div class="border-b border-base-200 px-4 py-3 dark:border-base-800">
             <h3 class="text-base font-semibold text-base-900 dark:text-base-100">Sales Report</h3>
         </div>
-        <div class="space-y-4 p-4">
-            <form method="get" class="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
-                <div>
-                    <label class="mb-1 block text-sm text-base-600 dark:text-base-300">From date</label>
-                    <input type="date" name="from_date" value="{{ report_from_date }}" class="w-full rounded border border-base-300 px-3 py-2 text-sm dark:border-base-700 dark:bg-base-900 dark:text-base-100">
+        <div class="flex flex-col gap-5 p-4">
+            <form method="get" class="flex flex-col gap-4 md:flex-row">
+                <div class="min-w-[180px]">
+                    <label class="mb-1 block text-sm text-base-600 dark:text-base-300">
+                        From date
+                    </label>
+                    <input
+                        type="date"
+                        name="from_date"
+                        value="{{ report_from_date }}"
+                        class="w-full rounded border border-base-300 px-3 py-2 text-sm dark:border-base-700 dark:bg-base-900 dark:text-base-100"
+                    >
                 </div>
-                <div>
-                    <label class="mb-1 block text-sm text-base-600 dark:text-base-300">To date</label>
-                    <input type="date" name="to_date" value="{{ report_to_date }}" class="w-full rounded border border-base-300 px-3 py-2 text-sm dark:border-base-700 dark:bg-base-900 dark:text-base-100">
+            
+                <div class="min-w-[180px]">
+                    <label class="mb-1 block text-sm text-base-600 dark:text-base-300">
+                        To date
+                    </label>
+                    <input
+                        type="date"
+                        name="to_date"
+                        value="{{ report_to_date }}"
+                        class="w-full rounded border border-base-300 px-3 py-2 text-sm dark:border-base-700 dark:bg-base-900 dark:text-base-100"
+                    >
                 </div>
-                <div class="md:col-span-2">
-                    <button type="submit" class="rounded border border-primary-600 bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
+            
+                <div class="flex flex-col justify-end">
+                    <div class="mb-1 h-[20px]"></div>
+            
+                    <button
+                        type="submit"
+                        class="h-10 rounded border border-primary-600 bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700"
+                    >
                         Generate Report
                     </button>
                 </div>
             </form>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div class="rounded border border-base-200 p-3 dark:border-base-800">
+            <div class="flex flex-wrap gap-3">
+                <div class="min-w-[220px] flex-1 rounded border border-base-200 p-3 dark:border-base-800">
                     <p class="text-xs text-base-500 dark:text-base-400">Total Sales Amount</p>
                     <p class="mt-1 text-lg font-semibold text-base-900 dark:text-base-100">{{ sales_summary.total_sales_amount }}</p>
                 </div>
-                <div class="rounded border border-base-200 p-3 dark:border-base-800">
+                <div class="min-w-[220px] flex-1 rounded border border-base-200 p-3 dark:border-base-800">
                     <p class="text-xs text-base-500 dark:text-base-400">Total Profit</p>
                     <p class="mt-1 text-lg font-semibold text-base-900 dark:text-base-100">{{ sales_summary.total_profit }}</p>
                 </div>
-                <div class="rounded border border-base-200 p-3 dark:border-base-800">
+                <div class="min-w-[220px] flex-1 rounded border border-base-200 p-3 dark:border-base-800">
                     <p class="text-xs text-base-500 dark:text-base-400">Total Sold Quantity</p>
                     <p class="mt-1 text-lg font-semibold text-base-900 dark:text-base-100">{{ sales_summary.total_sold_quantity }}</p>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="overflow-hidden rounded border border-base-200 bg-white shadow-sm dark:border-base-800 dark:bg-base-900">
-        <div class="border-b border-base-200 px-4 py-3 dark:border-base-800">
-            <h3 class="text-base font-semibold text-base-900 dark:text-base-100">Recent Audit Logs</h3>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead>
-                    <tr class="border-b border-base-200 text-left dark:border-base-800">
-                        <th class="px-4 py-3">Time</th>
-                        <th class="px-4 py-3">User</th>
-                        <th class="px-4 py-3">Action</th>
-                        <th class="px-4 py-3">Model</th>
-                        <th class="px-4 py-3">Object ID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in audit_logs %}
-                        <tr class="border-b border-base-100 dark:border-base-800">
-                            <td class="px-4 py-3">{{ log.timestamp }}</td>
-                            <td class="px-4 py-3">{{ log.user|default:"-" }}</td>
-                            <td class="px-4 py-3">{{ log.action }}</td>
-                            <td class="px-4 py-3">{{ log.model_name }}</td>
-                            <td class="px-4 py-3">{{ log.object_id }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td class="px-4 py-3 text-base-500" colspan="5">No audit logs found.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
     </div>
 {% endblock %}
